@@ -1,86 +1,80 @@
 const std = @import("std");
 const process = std.process;
+const warn = std.debug.warn;
 usingnamespace @import("constants.zig");
 
-const solve : SudokuSolverFn = @import("solver1/solver1.zig").solve;
-
+const solve: SudokuSolverFn = @import("solver1/solver1.zig").solve;
 
 pub fn main() anyerror!void {
     var args = process.args();
-    
-    var memory : [256]u8 = [_]u8{'0'} ** 256;
+
+    var memory: [256]u8 = [_]u8{'0'} ** 256;
     var fixed_alloc = std.heap.FixedBufferAllocator.init(memory[0..]);
-    var alloc : *std.mem.Allocator = &fixed_alloc.allocator;
-    
+    var alloc: *std.mem.Allocator = &fixed_alloc.allocator;
+
     _ = try args.next(alloc) orelse {
         return error.BadArguments;
     };
-    
+
     const puzzleFileName = try args.next(alloc) orelse {
-        std.debug.warn("Lacking file argument. Aborted.\n",.{});
+        warn("Lacking file argument. Aborted.\n", .{});
         return;
     };
-    std.debug.warn("Trying to read puzzle from file: `{}`\n", .{puzzleFileName});
-    
-    const fileNameEndIdx = puzzleFileName.len-1;
-    
-    
+    warn("Trying to read puzzle from file: `{}`\n", .{puzzleFileName});
 
-    const boardArray = import9x9(puzzleFileName) catch |e| switch(e){
+    const fileNameEndIdx = puzzleFileName.len - 1;
+
+    const boardArray = import9x9(puzzleFileName) catch |e| switch (e) {
         error.FileNotFound => {
-            std.debug.warn("Got: {}\n",.{e});
+            warn("Got: {}\n", .{e});
             return;
         },
         else => {
-            std.debug.warn("Got: {}\n",.{e});
+            warn("Got: {}\n", .{e});
             return;
         },
     };
-    
-    printBoard9x9("Board init to:\n",boardArray);
-    std.debug.warn("Trying to solve it..\n", .{});
-    
+
+    printBoard9x9("Board init to:\n", boardArray);
+    warn("Trying to solve it..\n", .{});
+
     const res = solve(boardArray);
-    
-    std.debug.warn("Result status: {}\n",.{res.resultStatus});
-    printBoard9x9("Board changed to:\n",res.boardValues);
-    
-    
+
+    warn("Result status: {}\n", .{res.resultStatus});
+    printBoard9x9("Board changed to:\n", res.boardValues);
 }
 
-
 fn printBoard9x9(prompt: []const u8, board: [81]u8) void {
-    std.debug.warn("{}", .{prompt[0..]});
+    warn("{}", .{prompt[0..]});
     var i: usize = 0;
     while (i < 81) : (i += 1) {
         if (i == 0) {
             //do nothing
         } else if (i % 27 == 0) {
-            std.debug.warn("\n------+------+------\n",.{});
+            warn("\n------+------+------\n", .{});
         } else if (i % 9 == 0) {
-            std.debug.warn("\n",.{});
+            warn("\n", .{});
         } else if (i % 3 == 0 and i != 0) {
-            std.debug.warn("| ",.{});
+            warn("| ", .{});
         }
         if (board[i] == 0) {
-            std.debug.warn(". ",.{});
+            warn(". ", .{});
         } else {
-            std.debug.warn("{} ", .{board[i]});
+            warn("{} ", .{board[i]});
         }
     }
-    std.debug.warn("\n",.{});
+    warn("\n", .{});
 }
-
 
 fn import9x9(filename: []const u8) anyerror![81]u8 {
     const cwd = std.fs.cwd();
     const openFlag = std.fs.File.OpenFlags{};
-    
-    var memory : [4000]u8 = [_]u8{'0'} ** 4000;
-    var fixed_alloc = std.heap.FixedBufferAllocator.init(memory[0..]);
-    var alloc : *std.mem.Allocator = &fixed_alloc.allocator;
 
-    const fileContents = try cwd.readFileAlloc(alloc,filename,4000-1);
+    var memory: [4000]u8 = [_]u8{'0'} ** 4000;
+    var fixed_alloc = std.heap.FixedBufferAllocator.init(memory[0..]);
+    var alloc: *std.mem.Allocator = &fixed_alloc.allocator;
+
+    const fileContents = try cwd.readFileAlloc(alloc, filename, 4000 - 1);
 
     var board: [81]u8 = [_]u8{0} ** 81;
     var i: usize = 0;
@@ -88,7 +82,7 @@ fn import9x9(filename: []const u8) anyerror![81]u8 {
 
     while (i < fileContents.len) : (i += 1) {
         const b = fileContents[i];
-        const val = charToDigit(b, @as(u8,0));
+        const val = charToDigit(b, @as(u8, 0));
         if (val != 255) {
             board[k] = val;
             k += 1;
@@ -99,11 +93,10 @@ fn import9x9(filename: []const u8) anyerror![81]u8 {
     return board;
 }
 
-
 fn charToDigit(c: u8, base: u8) u8 {
     return switch (c) {
-        '.' => @as(u8,0),
+        '.' => @as(u8, 0),
         '0'...'9' => c - '0',
-        else => return @as(u8,255),
+        else => return @as(u8, 255),
     };
 }

@@ -2,39 +2,35 @@ const std = @import("std");
 usingnamespace @import("constants.zig");
 const solver = @import("solver1/solver1.zig").solve;
 
-
-fn charArrayLen81ToPuzzle(charArray : []const u8) [NUM_SQUARES]BoardValue {
-    var out : [NUM_SQUARES]BoardValue = [_]BoardValue{0} ** NUM_SQUARES;
-    var k : usize = 0;
-    while(k<charArray.len) : (k+=1) {
-        out[k] = charToDigit(charArray[k],@as(BoardValue,0));
+fn charArrayLen81ToPuzzle(charArray: []const u8) [NUM_SQUARES]BoardValue {
+    var out: [NUM_SQUARES]BoardValue = [_]BoardValue{0} ** NUM_SQUARES;
+    var k: usize = 0;
+    while (k < charArray.len) : (k += 1) {
+        out[k] = charToDigit(charArray[k], @as(BoardValue, 0));
     }
     return out;
-
 }
 
 fn charToDigit(c: u8, base: u8) u8 {
     return switch (c) {
-        '.' => @as(u8,0),
+        '.' => @as(u8, 0),
         '0'...'9' => c - '0',
-        else => return @as(u8,255),
+        else => return @as(u8, 255),
     };
 }
 
-fn fulltestExact(puzzle: [NUM_SQUARES]BoardValue, solution: [NUM_SQUARES]BoardValue) void{
+fn fulltestExact(puzzle: [NUM_SQUARES]BoardValue, solution: [NUM_SQUARES]BoardValue) void {
     const result = solver(puzzle);
-    std.testing.expectEqual(SudokuResultStatus.SOLVED,result.resultStatus);
-    std.testing.expectEqual(solution,result.boardValues);
+    std.testing.expectEqual(SudokuResultStatus.SOLVED, result.resultStatus);
+    std.testing.expectEqual(solution, result.boardValues);
     return;
 }
 
-fn fulltest(puzzle: [NUM_SQUARES]BoardValue, solution: [NUM_SQUARES]BoardValue) void{
+fn fulltest(puzzle: [NUM_SQUARES]BoardValue, solution: [NUM_SQUARES]BoardValue) void {
     const result = solver(puzzle);
-    std.testing.expectEqual(SudokuResultStatus.SOLVED,result.resultStatus);
+    std.testing.expectEqual(SudokuResultStatus.SOLVED, result.resultStatus);
     return;
 }
-
-
 
 test "#1 hard puzzles from magictour.free.fr/top95" {
     fulltest(
