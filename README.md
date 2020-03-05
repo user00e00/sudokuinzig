@@ -1,13 +1,24 @@
 # sudokuinzig
 
-Simple sudoku solver written in zig. 
+Simple and robust sudoku solver written in zig, version 0.5.0+ae99fabfe.
 
-Imports a sudoku puzzle from a "sudoku.txt" file, and if the puzzle is solvable, creates a file "sudoku_solved.txt" with the solution.
-Prints some information to terminal while running, but does not currently give any detailed information on unsolvable sudokus.
+The solver algorithm uses a mix of regular candidate elimination in a depth first solution search, and uses additional group based elimination heuristic to prune the search tree.
 
-The solver represents the sudoku board with an array of board positions, where the portion of it that is "filled in" grows and shrinks
-as the solver runs. Does elimination of invalid candidate numbers, and will create "guessing branches" if there's no position on the board
-where a number can be inserted unambiguously. 
+The solver represents the sudoku board with an array of board positions together with an ordered list of insertions that grows and shrinks as the algorithm explores the solution tree
+until either an inconsistency, the full solution is found, or max iterations are reached.
 
-To run: "zig build run"
+To try:
 
+```
+zig build;
+cd bin;
+./sudokuinzig ../sudoku.txt
+```
+Parsing the input file, this program ignores characters apart from `0`, `.`, `_` (treated as empty) and numbers `1` to `9`, and appends these until all 81 squares have been assigned to.
+
+There is also an extensive test suite, run tests with
+
+```
+zig test test_multiple.zig;
+zig test test_hard_puzzles.zig;
+```
