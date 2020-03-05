@@ -452,11 +452,11 @@ const SudokuSolver = struct {
                     const isSingleCandidate = @popCount(Mask, isect) == 1;
                     if (isSingleCandidate) {
                         self.appendToBranchByMask(idx, isect);
+                        out = true;
                     } else {
-                        const value = popFirstFromMask(isect);
-                        self.startBranch(idx, value, isect & (~MASK_MAP[value]));
+                        self.candidateMasksByIndex[idx] = isect;
                     }
-                    out = true;
+
                 }
             }
             return out;
