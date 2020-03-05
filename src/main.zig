@@ -5,7 +5,7 @@ usingnamespace @import("constants.zig");
 
 const solve: SudokuSolverFn = @import("solver1/solver1.zig").solve;
 
-const performanceTesting = true;
+const performanceTesting = false;
 pub const main = if(performanceTesting) solveMultiplePuzzles else solvePuzzleFromFile;
 
 
