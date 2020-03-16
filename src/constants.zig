@@ -1,11 +1,14 @@
-pub const NUM_BOX = 3; // NUM_BOX
-pub const NUM_SIDE = NUM_BOX * NUM_BOX; // NUM_SIDE
-pub const NUM_SQUARES = NUM_SIDE * NUM_SIDE; // NUM_SQUQRES
+const std = @import("std");
+const build_config = @import("build_config.zig");
+
+
+pub const NUM_BOX = if(build_config.SUPER_SUDOKU_MODE) 4 else 3;
+pub const NUM_SIDE = NUM_BOX * NUM_BOX;
+pub const NUM_SQUARES = NUM_SIDE * NUM_SIDE;
 
 pub const RawString = []const u8;
 
-//pub const BoardValue = @IntType(false,8);
-pub const BoardValue = u8;
+pub const BoardValue = std.meta.IntType(false,std.math.log2_int(u64,NUM_SQUARES));
 
 pub const SudokuResultStatus = enum {
     NOT_SOLVABLE,

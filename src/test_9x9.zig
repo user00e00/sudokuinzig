@@ -4,11 +4,6 @@ usingnamespace @import("constants.zig");
 
 const solver = @import("solver1/solver1.zig").solve;
 
-test "try1" {
-
-std.testing.expectEqual(1,1);
-
-}
 
 
 fn fulltestExact(puzzle: [NUM_SQUARES]BoardValue, solution: [NUM_SQUARES]BoardValue) void{
@@ -30,6 +25,11 @@ fn expectError(puzzle : [NUM_SQUARES]BoardValue) void{
     std.testing.expect(result.resultStatus != .SOLVED);
 }
 
+
+test "verify correct configuration" {
+    // only allow these tests when configuration is set to 9x9 sudoku puzzles
+    std.testing.expectEqual(9, NUM_SIDE);
+}
 
 
 

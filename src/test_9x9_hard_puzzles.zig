@@ -6,18 +6,27 @@ fn charArrayLen81ToPuzzle(charArray: []const u8) [NUM_SQUARES]BoardValue {
     var out: [NUM_SQUARES]BoardValue = [_]BoardValue{0} ** NUM_SQUARES;
     var k: usize = 0;
     while (k < charArray.len) : (k += 1) {
-        out[k] = charToDigit(charArray[k], @as(BoardValue, 0));
+        const mustTruncate = @bitSizeOf(u8) > @bitSizeOf(BoardValue);
+        const numCasted = switch(mustTruncate){
+            true => @truncate(BoardValue,charToDigitDecimal(charArray[k])),
+            else => @intCast(BoardValue,charToDigitDecimal(charArray[k])),
+        };
+        out[k] = numCasted;
     }
     return out;
 }
 
-fn charToDigit(c: u8, base: u8) u8 {
-    return switch (c) {
-        '.' => @as(u8, 0),
+fn charToDigitDecimal(c: u8) u8 {
+    const numVal : u8 = switch (c) {
+        '.' => 0,
         '0'...'9' => c - '0',
-        else => return @as(u8, 255),
+        else => 255,
     };
+    return numVal;
+
 }
+
+
 
 fn fulltestExact(puzzle: [NUM_SQUARES]BoardValue, solution: [NUM_SQUARES]BoardValue) void {
     const result = solver(puzzle);
@@ -31,6 +40,13 @@ fn fulltest(puzzle: [NUM_SQUARES]BoardValue, solution: [NUM_SQUARES]BoardValue) 
     std.testing.expectEqual(SudokuResultStatus.SOLVED, result.resultStatus);
     return;
 }
+
+
+test "verify correct configuration" {
+    // only allow these tests when configuration is set to 9x9 sudoku puzzles
+    std.testing.expectEqual(9, NUM_SIDE);
+}
+
 
 test "#1 hard puzzles from magictour.free.fr/top95" {
     fulltest(

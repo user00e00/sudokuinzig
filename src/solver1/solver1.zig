@@ -1,9 +1,10 @@
 const std = @import("std");
-usingnamespace @import("../constants.zig");
-//usingnamespace @import("constants.zig");
 
-const BoardIndex = u8;
-const GroupIndex = u8;
+usingnamespace @import("../constants.zig");
+
+const SUFFICIENT_BITS_FOR_INDEX = std.math.log2_int(u64,NUM_SQUARES*2);
+const BoardIndex = std.meta.IntType(false,SUFFICIENT_BITS_FOR_INDEX);
+const GroupIndex = BoardIndex;
 const SequenceIndex = BoardIndex;
 const Mask = u16;
 
@@ -37,7 +38,7 @@ pub fn solve(board: [NUM_SQUARES]BoardValue) SudokuResult {
 
     var res = solver.initFromArray(board);
     var iterCount: usize = 0;
-    while (iterCount < 40000) : (iterCount += 1) {
+    while (iterCount < 150000) : (iterCount += 1) {
         switch (res) {
             .COMPLETED => {
                 custom_debug.debugPrintArray(BoardValue, solver.getBoard()[0..]);
@@ -170,7 +171,7 @@ const BoardPos = struct {
 
     fn initBoard() [NUM_SQUARES]BoardPos {
         var out: [NUM_SQUARES]BoardPos = undefined;
-        var k: u8 = 0;
+        var k: BoardIndex = 0;
         while (k < NUM_SQUARES) : (k += 1) {
             out[k] = BoardPos.init(k);
         }
@@ -183,7 +184,11 @@ const BoardPos = struct {
 };
 
 const BOARD_MAP: [NUM_SQUARES]BoardPos = BoardPos.initBoard();
-const MASK_MAP: [NUM_SIDE + 1]Mask = if (NUM_SIDE == 9) [_]Mask{ 0, 1, 2, 4, 8, 16, 32, 64, 128, 256 } else if (NUM_SIDE == 16) [_]Mask{ 0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 } else unreachable;
+const MASK_MAP: [NUM_SIDE + 1]Mask = switch (NUM_SIDE) {
+    9 => [_]Mask{ 0, 1, 2, 4, 8, 16, 32, 64, 128, 256 },
+    16 => [_]Mask{ 0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 },
+    else => unreachable,
+};
 
 const MASK_COVER: Mask = (1 << NUM_SIDE) - 1;
 const MASK_EMPTY: Mask = 0;
@@ -204,7 +209,7 @@ fn maskToBoardValue(mask: Mask) BoardValue {
 
 fn popFirstFromMask(mask: Mask) BoardValue {
     std.debug.assert(@popCount(Mask, mask) != 0);
-    var k: u8 = 9;
+    var k: BoardValue = NUM_SIDE;
     while (k > 0) : (k -= 1) {
         const testMask = MASK_MAP[k];
         if (testMask & mask != 0) return k;
@@ -321,7 +326,7 @@ const SolverSequence = struct {
     }
 
     fn getPositionInInsertSequence(self: @This(), index: BoardIndex) BoardIndex {
-        var k: u8 = 0;
+        var k: SequenceIndex = 0;
         while (k < NUM_SQUARES) : (k += 1) {
             const compareIdx = self.insertSequence[k];
             if (compareIdx == index) {
@@ -370,8 +375,8 @@ const SudokuSolver = struct {
     }
 
     fn getMinCandidateIndex(self: @This()) BoardIndex {
-        var min: u8 = NUM_SIDE + 1;
-        var k: u8 = self.seq.getPivot();
+        var min: BoardValue = NUM_SIDE + 1;
+        var k: BoardIndex = self.seq.getPivot();
         const INVALID_IDX = NUM_SQUARES;
         var out: BoardIndex = INVALID_IDX;
         while (k < NUM_SQUARES) : (k += 1) {
@@ -392,7 +397,7 @@ const SudokuSolver = struct {
 
     /// return null if we reached the global root
     fn getSequencePosOfCurrentBranchRoot(self: @This()) ?SequenceIndex {
-        var k: u8 = self.seq.getPivot();
+        var k: BoardIndex = self.seq.getPivot();
         while (k > 0) {
             k -= 1;
             const idx = self.seq.getIndexAtPosition(k);
@@ -406,7 +411,7 @@ const SudokuSolver = struct {
 
     fn restrict(self: *@This()) SolverResult {
         custom_debug.debugMsg("# Restricting\n");
-        var k: u8 = self.seq.getPivot();
+        var k: BoardIndex = self.seq.getPivot();
         while (k < NUM_SQUARES) {
             const idx = self.seq.getIndexAtPosition(k);
             const mask = self.b.getMask(idx);
@@ -504,7 +509,7 @@ const SudokuSolver = struct {
 
     fn initFromArray(self: *@This(), board: [NUM_SQUARES]BoardValue) SolverResult {
         self.b.reset();
-        var k: u8 = 0;
+        var k: BoardIndex = 0;
         while (k < board.len) : (k += 1) {
             if (board[k] > NUM_SIDE) {
                 return SolverResult.FAILED_BOARD;
