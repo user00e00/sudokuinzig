@@ -1,6 +1,6 @@
 # sudokuinzig
 
-Simple and robust sudoku solver written in zig (version 0.5.0+ae99fabfe).
+Simple and robust sudoku solver written in zig (version 0.6.0+1e23a3cd9).
 
 It combines:
 - Heuristic 1: Sole candidate
@@ -27,8 +27,8 @@ pub const SUPER_SUDOKU_MODE = false;
 Then:
 ```
 zig build;
-cd bin;
-./sudokuinzig ../sudoku9x9.txt
+cd zig-cache/bin;
+./sudokuinzig ../../sudoku9x9.txt
 ```
 
 ## Interactive "super" Sudoku solver (16x16) build:
@@ -41,8 +41,8 @@ pub const SUPER_SUDOKU_MODE = true;
 Then:
 ```
 zig build;
-cd bin;
-./sudokuinzig ../sudoku16x16.txt
+cd zig-cache/bin;
+./sudokuinzig ../../sudoku16x16.txt
 ```
 
 

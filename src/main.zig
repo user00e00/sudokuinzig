@@ -68,7 +68,7 @@ pub fn solveMultiplePuzzles() anyerror!void {
     const milliTimestampFn = std.time.milliTimestamp;
     const startTime = milliTimestampFn();
     
-    solveAllPuzzles(puzzleSet);
+    solveAllPuzzles(&puzzleSet);
     
     const endTime = milliTimestampFn();
     const diffTimeMillis : f32 = @intToFloat(f32,endTime-startTime);
@@ -125,7 +125,7 @@ fn importNxN(comptime N : u32, filename: []const u8) anyerror![N*N]BoardValue {
 
     while (i < fileContents.len) : (i += 1) {
         const b = fileContents[i];
-        const num = charToDigit(b, @as(BoardValue, 0));
+        const num = charToDigit(b);
         if (num != 255) {
             const numCasted = switch( @bitSizeOf(u8) > @bitSizeOf(BoardValue) ){
                 true => @truncate(BoardValue,num),
@@ -181,7 +181,7 @@ fn solveAndAssertIsSolved(puzzleCharArray81 : []const u8) void{
     assert(res.resultStatus == .SOLVED);
 }
 
-fn solveAllPuzzles(puzzlesArray : [][]const u8) void{
+fn solveAllPuzzles(puzzlesArray : []const []const u8) void{
     const len = puzzlesArray.len;
     var k : u32 = 0;
     while(k<len) : (k+=1) {
